@@ -1,0 +1,294 @@
+const express = require('express');
+let booksdb = require("./booksdb.js");
+let isValid = require("./auth_users.js").isValid;
+let users = require("./auth_users.js").users;
+const public_users = express.Router();
+
+// Task10: Promise callback => Get the book list available in the shop
+public_users.get('/',function (req, res) {
+  
+    //Creating a promise method. The promise will get resolved when timer times out after 6 seconds.
+    let myPromise = new Promise((resolve,reject) => {
+        setTimeout(() => { resolve(booksdb) }, 3000); 
+    });
+    
+    myPromise.then(function() {
+        res.send(booksdb);
+    });    
+
+});
+
+// Task11: Promise callback => 
+public_users.get('/isbn/:isbn',function (req, res) {
+    
+    let blist = {};
+        
+    //Creating a promise method. The promise will get resolved when timer times out after 6 seconds.
+    let myPromise = new Promise((resolve,reject) => {
+        setTimeout(() => { resolve(booksdb) }, 3000); 
+    });
+    
+    myPromise.then(function() {
+        for (let key in booksdb) {
+            if(booksdb[key].isbn == req.params.isbn){ 
+                
+                blist = { 
+                    "author": booksdb[key].author,
+                    "title":  booksdb[key].title,   
+                    "reviews": booksdb[key].reviews
+                };                        
+            
+                res.send(blist);
+            }
+        }    
+    });    
+
+});
+
+// Task12: Promise callback => Get book details based on author
+public_users.get('/author/:author',function (req, res) {
+    
+    //Creating a promise method. The promise will get resolved when timer times out after 6 seconds.
+    let myPromise = new Promise((resolve,reject) => {
+        setTimeout(() => { resolve(booksdb) }, 3000); 
+    });
+    
+    myPromise.then(function() {
+        
+        let author =  req.params.author;
+        let bArray = [];
+        let blist  = { "booksbyauthor":[{ "a": "1"}] }
+    
+     for (let key in booksdb) {
+         if(booksdb[key].author == author){
+             
+             bArray.push({"isbn": booksdb[key].isbn, "title": booksdb[key].title, "reviews": booksdb[key].reviews });
+                                     
+         }
+     }
+ 
+     blist = { bArray };     
+    
+     if(blist){return res.send(blist); }
+     else { return res.status(300).json({message: "Books Not found"}); }
+ 
+    });
+});    
+
+// Task 13: Search by title.        
+public_users.get('/title/:title',function (req, res) {
+    
+    //Creating a promise method. The promise will get resolved when timer times out after 6 seconds.
+    let myPromise = new Promise((resolve,reject) => {
+        setTimeout(() => { resolve(booksdb) }, 3000); 
+    });
+    
+    myPromise.then(function() {
+        
+        let title =  req.params.title;
+        let blist = { "booksbyauthor":[{ "a": "1"}] }
+
+        for (let key in booksdb) {
+            if(booksdb[key].title == title){
+                blist["booksbyauthor"] = [{ "isbn": booksdb[key].isbn,
+                                        "author": booksdb[key].title,
+                                        "reviews": booksdb[key].reviews
+                                    }];          
+                break;                         
+            }
+        }
+ 
+     if(blist){return res.send(blist); }
+     else { return res.status(300).json({message: "Books Not found"}); }
+ 
+    });
+});    
+
+// Task1 the list of books available in the shop under
+public_users.get('/',function (req, res) {
+	//Write your code here
+
+	res.send(booksdb);
+);
+
+// Task2: Get book details based on ISBN
+	//Write your code here
+	let isbn = req.params.title;
+	
+	for (let key in booksdb) {
+        if(booksdb[key].isbn == isbn){
+	blist["booksbyauthor"] = [{ "isbn": booksdb[key].isbn,
+                                    "title": booksdb[key].title,
+                                    "reviews": booksdb[key].reviews,
+                                 }];      
+            break                        
+        }
+    }
+
+    if(blist){return res.send(blist); }
+    else { return res.status(300).json({message: "Books Not found"}); }
+
+}); 
+ 
+// Task3: Get book details based on author
+public_users.get('/author/:author',function (req, res) {
+  
+   //Write your code here
+   let author = req.params.author;
+   let blist = { "booksbyauthor":[{ "a": "1"}] }
+   
+    for (let key in booksdb) {
+        if(booksdb[key].author == author){
+            
+            blist["booksbyauthor"] = [{ "isbn": booksdb[key].isbn,
+                                        "title": booksdb[key].title,
+                                        "reviews": booksdb[key].reviews,
+                                    }];      
+            break                        
+        }
+    }
+
+    if(blist){return res.send(blist); }
+    else { return res.status(300).json({message: "Books Not found"}); }
+
+});
+
+// Task4: Get all books based on title
+public_users.get('/title/:title',function (req, res) {
+    
+    //Write your code here
+    let title = req.params.title;
+    let blist = { "booksbyauthor":[{ "a": "1"}] }
+
+    for (let key in booksdb) {
+        if(booksdb[key].title == title){
+            
+            blist["booksbyauthor"] = [{ "isbn": booksdb[key].isbn,
+                                        "author": booksdb[key].title,
+                                        "reviews": booksdb[key].reviews
+                                    }];                         
+                           
+            break;                        
+
+        }
+    }
+
+    if(blist){return res.send(blist); }
+    else { return res.status(300).json({message: "Books Not found"}); }
+
+});
+
+// Task5: Get book review
+public_users.get('/review/:isbn',function (req, res) {
+
+    //Write your code here
+    let isbn  = req.params.isbn;
+    let blist = {};
+
+    for (let key in booksdb) {
+        if(booksdb[key].isbn == isbn){
+            
+            blist = {};                         
+            break;                        
+
+        }
+    }
+
+    if(blist){return res.send(blist); }
+    else { return res.status(300).json({message: "Books Not found"}); }
+  
+});
+
+public_users.put("/auth/review/:isbn", (req, res) => {
+    
+    
+});
+
+//Task 6: Complete the code for registering a new user
+public_users.post("/register", (req,res) => {
+  
+    //Write your code here
+    const username = req.body.username;
+    const password = req.body.password;
+    
+    if (username && password) {
+      if (!doesExist(username)) { 
+        users.push({"username":username,"password":password});
+        return res.status(200).json({message: "User successfully registred. Now you can login"});
+      } else {
+        return res.status(404).json({message: "User already exists!"});    
+      }
+    } 
+    
+    return res.status(404).json({message: "Unable to register user."});
+
+});
+
+// Task7 logging in as a registered user.
+regd_users.post("/login", (req,res) => {
+  
+    //Write your code here
+    const username = req.body.username;
+    const password = req.body.password;
+    
+    if (!username || !password) { return res.status(404).json({message: "Error logging in"}); }
+    if (authenticatedUser(username,password)) {
+        let accessToken = jwt.sign({
+            data: password
+        }, 'access', { expiresIn: 60 * 60 });
+    
+        req.session.authorization = { accessToken,username }
+
+        return res.status(200).send("User successfully logged in");
+  
+    } else {
+        return res.status(208).json({message: "Invalid Login. Check username and password"});
+    }
+});
+
+// Task 8 adding or modifying a book review.
+public_users.put("/auth/review/:isbn", (req, res) => {	
+
+
+	let isbn = req.params.isbn
+	let aflg = 0;
+	let c == 1;  
+	
+	for (let key in booksdb) {
+        	if(booksdb['key'].isbn == isbn){
+            
+            	        book[key].reviews = { c: req.params.rerviews }     
+            		
+			aflg = 1;
+			break;                        
+
+        	}
+    	}
+
+    	if(aflg == 1){ res.send("The review for ISBN 1 posted by user test Added"); }
+    	else { return res.status(300).json({message: "review not found"}); }
+
+});
+
+// Task9 deleting a book review under
+public_users.delete("/auth/review/:isbn", (req, res) => {
+    
+	let reviews = req.params.reviews
+	let dFlg    = 0; 
+	
+	for (let key in booksdb) {
+        	if(booksdb[key].reviews == reviews){
+            
+            	        book[key].reviews = ""; 
+			dFlg = 1;               
+            		break;                        
+
+        	}
+    	}
+
+    	if(dFlg == 1){ res.send("The review for ISBN 1 posted by user test deleted"); }
+    	else { return res.status(300).json({message: "review not found"}); }
+  	
+});
+
+module.exports.general = public_users
